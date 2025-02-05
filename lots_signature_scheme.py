@@ -89,12 +89,12 @@ def sign_message(message_file, private_key_file):
 
 def verify_signature(message_file, public_key_file, signature_file):
     """Verifies a Lamport one-time signature."""
+
+    #Read message, public key, and signature files
     with open(message_file, "rb") as f:
         message_hash = sha512(f.read())
-
     with open(public_key_file, "rb") as f:
         public_key = f.read()
-
     with open(signature_file, "rb") as f:
         signature = f.read()
 
@@ -103,6 +103,8 @@ def verify_signature(message_file, public_key_file, signature_file):
         bit = bit = get_bit(message_hash, i)
         #Extracts the corresonding part of the signature
         sig_part = signature[i * HASH_SIZE:(i + 1) * HASH_SIZE]
+        
+        #Extraxts the expected hash value of the private key used for signing the bit
         expected_hash = public_key[(bit * KEY_SIZE + i) * HASH_SIZE:(bit * KEY_SIZE + i + 1) * HASH_SIZE]
         if sha512(sig_part) != expected_hash:
             print("INVALID")
