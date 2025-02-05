@@ -1,33 +1,33 @@
 """
 Lamport One-Time Signature Implementation
 
+Overview:
+    - Generate a public and private key pair
+    - Sign a message
+    - Verify the signature using the private key
+
 1. Generate keys:
-    - python lots_signature_scheme.py lots_genkeys
+    - python3 lots_signature_scheme.py lots_genkeys
 
 2. Sign a message: 
-    - python lots_signature_scheme.py lots_sign message.txt private_key.lots
+    - python3 lots_signature_scheme.py lots_sign message.txt private_key.lots
 
 3. Verify a signature:
-    - python lots_signature_scheme.py lots_verify message.txt public_key.lots signature.lots
+    - python3 lots_signature_scheme.py lots_verify message.txt public_key.lots signature.lots
 """
 
 
 import os
 import sys
-import subprocess
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.backends import default_backend
-
+import hashlib
 
 KEY_SIZE = 512
 HASH_SIZE = 64
 
 
 def sha512(data):
-    """Compute SHA-512 hash using OpenSSL EVP API (cryptography library)."""
-    digest = hashes.Hash(hashes.SHA512(), backend=default_backend()) 
-    digest.update(data)  
-    return digest.finalize()  # Get the final hash output
+    """Compute SHA-512 hash using OpenSSL"""
+    return hashlib.sha512(data).digest()
 
 
 
@@ -45,7 +45,7 @@ def generate_keys():
     with open("private_key.lots", "wb") as f:
         for k0, k1 in zip(private_key_0, private_key_1):
             f.write(k0 + k1)
-
+    #Writes the public keys in the file
     with open("public_key.lots", "wb") as f:
         for pk0 in public_key_0:
             f.write(pk0)
@@ -64,11 +64,11 @@ def get_bit(message_hash, i):
 def sign_message(message_file, private_key_file):
     """Signs a message using a Lamport one-time signature."""
 
-    #  Reads message file and and hashes it
+    #Reads message file and and hashes it
     with open(message_file, "rb") as f:
         message_hash = sha512(f.read())
 
-    #  Load the private key
+    #Load the private key
     with open(private_key_file, "rb") as f:
         private_key = f.read()
 
@@ -103,14 +103,13 @@ def verify_signature(message_file, public_key_file, signature_file):
         bit = bit = get_bit(message_hash, i)
         #Extracts the corresonding part of the signature
         sig_part = signature[i * HASH_SIZE:(i + 1) * HASH_SIZE]
-
         expected_hash = public_key[(bit * KEY_SIZE + i) * HASH_SIZE:(bit * KEY_SIZE + i + 1) * HASH_SIZE]
         if sha512(sig_part) != expected_hash:
-            print("SIGNATURE VERIFICATION FAILED")
+            print("INVALID")
             return
-    print("SIGNATURE VERIFIED")
+    print("VALID")
 
-
+#Command line interface
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: lots_genkeys | lots_sign <message> <private_key.lots> | lots_verify <message> <public_key.lots> <signature.lots>")
