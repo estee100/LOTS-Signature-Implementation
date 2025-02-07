@@ -7,15 +7,14 @@ Overview:
     - Verify the signature using the private key
 
 1. Generate keys:
-    - python3 lots_signature_scheme.py lots_genkeys
+    - python lots_signature_scheme.py lots_genkeys
 
 2. Sign a message: 
-    - python3 lots_signature_scheme.py lots_sign message.txt private_key.lots
+    - python lots_signature_scheme.py lots_sign message.txt private_key.lots
 
 3. Verify a signature:
-    - python3 lots_signature_scheme.py lots_verify message.txt public_key.lots signature.lots
+    - python lots_signature_scheme.py lots_verify message.txt public_key.lots signature.lots
 """
-
 
 import os
 import sys
@@ -73,15 +72,13 @@ def sign_message(message_file, private_key_file):
         private_key = f.read()
 
     signature = []
-
-    #Each bit of the message_hash is extracted and depending on the
-    # bit value. The corresponding private key value is used to 
-    #sign the bit and is added to the signature list
+    #Iterat over each bit of the hashed message
     for i in range(KEY_SIZE):
         bit = get_bit(message_hash, i)
-        signature.append(private_key[(2 * i + bit) * HASH_SIZE:(2 * i + bit + 1) * HASH_SIZE])
-    
-    #Write each 64-byte private key value
+        #Selects the corresponding private key value based on the bit value
+        sig_part = private_key[(2 * i + bit) * HASH_SIZE:(2 * i + bit + 1) * HASH_SIZE]
+        signature.append(sig_part)
+
     with open("signature.lots", "wb") as f:
         for sig in signature:
             f.write(sig)
